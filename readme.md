@@ -9,7 +9,7 @@
         - config.php : 全体設定
         - function.php : 関数(サブルーチン)の定義
         - keys.php : 環境ごとの設定
-        - OAuth.php : twitteroauth.phpで用いられる
+        - oauth.php : twitteroauth.phpで用いられる
         - twitteroauth.php : TwitterAPI利用ライブラリ
     - uploads : 画像のアップロード用ディレクトリ
     - views : ビュー
