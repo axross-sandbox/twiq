@@ -21,6 +21,7 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $errors = array();
 
+        // titleのバリデーション
         if (isset($_POST['title'])) {
             $title = $_POST['title'];
 
@@ -31,6 +32,7 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['title'] = 'title is nothing';
         }
 
+        // サムネイル画像のバリデーション・保存処理
         if (isset($_FILES['thumb']) && $_FILES['thumb']['size'] !== 0) {
             $dir = 'uploads/quiz/';
 
@@ -44,6 +46,7 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $thumb = 'assets/nowprinting.jpg';
         }
 
+        // 問題文のバリデーション
         if (isset($_POST['sentence'])) {
             $sentence = $_POST['sentence'];
 
@@ -56,6 +59,7 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['sentence'] = 'sentence is nothing';
         }
 
+        // 答え入力欄の前の文字のバリデーション
         if (isset($_POST['before_input'])) {
             $before_input = $_POST['before_input'];
 
@@ -66,6 +70,7 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['before_input'] = 'before_input is nothing';
         }
 
+        // 答え入力欄の後の文字のバリデーション
         if (isset($_POST['after_input'])) {
             $after_input = $_POST['after_input'];
 
@@ -76,6 +81,7 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['after_input'] = 'after_input is nothing';
         }
 
+        // 正解ワードのバリデーションと分割置換処理
         if (isset($_POST['words'])) {
             $words = $_POST['words'];
             $wordsArr = array_unique(preg_split('/\r\n|\r|\n/', $words));
@@ -99,6 +105,7 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['words'] = 'words is nothing';
         }
 
+        // 解説のバリデーション
         if (isset($_POST['interpretation'])) {
             $interpretation = $_POST['interpretation'];
 
@@ -111,7 +118,10 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['interpretation'] = 'interpretation is nothing';
         }
 
+        // エラーがなかったかどうか確認する
         if (count($errors) === 0) {
+            // エラーがなかった場合
+            
             // PDOインスタンスを生成
             try {
                 $pdo = new PDO ('mysql:dbname=' . DB_NAME . ';host=' . DB_HOSTNAME, DB_USERNAME, DB_PASSWORD, $DB_OPTION);
@@ -120,16 +130,17 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit();
             }
 
+            // ランダムな文字列を生成してIDテキストにする
             $idtext = generateRandomString(12) . generateRandomString(12) . generateRandomString(8);
 
-            // 同じタイトルの問題がないか調べる
+            // 同じIDテキストの問題がないか調べる
             $statement = $pdo->prepare("SELECT id FROM quizzes WHERE idtext = :idtext;");
             $statement->bindValue(':idtext', $idtext);
             $statement->execute();
             $result = $statement->fetch();
-
+            
             if (!isset($result['id']) || $result['id'] < 1) {
-                // 同タイトルの問題が存在しない
+                // 同IDテキストの問題が存在しない
 
                 $statement = $pdo->prepare("INSERT INTO quizzes (title, thumb, sentence, before_input, after_input, words, interpretation, author_id, idtext, created) VALUES (:title, :thumb, :sentence, :before_input, :after_input, :words, :interpretation, :author_id, :idtext, :created);");
                 $statement->bindValue(':title', $title);
@@ -173,9 +184,9 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 setAlert('問題を投稿しました。', 'green');
                 header('Location: ' . APP_URL . $id);
             } else {
-                // 同タイトルの問題が既にあった
+                // 同IDテキストの問題が既にあった
 
-                setAlert('既に同じタイトルの問題が存在します。<br>タイトルを変えて下さい。');
+                setAlert('サーバーへの保存時にエラーが発生しました。<br>もう一度投稿して下さい。');
 
                 // トークンの再生成
                 $_SESSION['post']['token'] = generateRandomString();
@@ -187,7 +198,7 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 require view('_footer');
             }
         } else {
-            setAlert('投稿内容に不備がありました。<br>もう一度確認してみて下さい。');
+            setAlert('投稿内容に不備があったようです。<br>もう一度確認してみて下さい。');
             writeLog('投稿', 'バリデーション不一致による投稿エラーが発生しました。');
 
             // トークンの再生成
@@ -211,6 +222,8 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ' . APP_URL);
     }
 } else if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    // 普通に/postへアクセスした場合
+    
     // PDOインスタンスを生成
     try {
         $pdo = new PDO ('mysql:dbname=' . DB_NAME . ';host=' . DB_HOSTNAME, DB_USERNAME, DB_PASSWORD, $DB_OPTION);
@@ -242,6 +255,8 @@ if (isLogin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ' . APP_URL);
     }
 } else {
+    // ログインせずにpostへ直アクセス
+    
     writeLog('投稿', 'postが直で叩かれました。');
     setAlert('問題を投稿するにはログインして下さい。');
     header('Location: ' . APP_URL);
