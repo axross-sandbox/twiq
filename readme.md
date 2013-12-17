@@ -11,7 +11,6 @@
         - keys.php : 環境ごとの設定
         - OAuth.php : twitteroauth.phpで用いられる
         - twitteroauth.php : TwitterAPI利用ライブラリ
-    - models : モデル
     - uploads : 画像のアップロード用ディレクトリ
     - views : ビュー
     - .htaccess
