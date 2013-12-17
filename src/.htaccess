@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+    ReWriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule (.*) routes.php [L]
+</IfModule>
